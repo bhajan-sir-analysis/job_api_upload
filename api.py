@@ -1,8 +1,12 @@
-from fastapi import FastAPI, Header
+from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from typing import List
 
 app = FastAPI()
+
+# ✅ Security scheme
+security = HTTPBearer()
 
 class Job(BaseModel):
     job_title: str
@@ -11,17 +15,20 @@ class Job(BaseModel):
     experience: str
     description: str
 
-
 @app.post("/upload")
 def upload_jobs(
     data: List[Job],
-    authorization: str = Header(..., alias="Authorization")
+    credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
-    if authorization.strip() != "Bearer demo123":
-        return {"status": "error", "message": "Unauthorized"}
+    if credentials.credentials != "demo123":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token"
+        )
 
     return {
         "status": "success",
         "rows_received": len(data)
     }
+
 
