@@ -4,7 +4,6 @@ from typing import List
 
 app = FastAPI()
 
-# ✅ Model
 class Job(BaseModel):
     job_title: str
     company: str
@@ -12,15 +11,17 @@ class Job(BaseModel):
     experience: str
     description: str
 
+
 @app.post("/upload")
 def upload_jobs(
     data: List[Job],
-    authorization: str = Header(None)
+    authorization: str = Header(..., alias="Authorization")
 ):
-    if authorization != "Bearer demo123":
+    if authorization.strip() != "Bearer demo123":
         return {"status": "error", "message": "Unauthorized"}
 
     return {
         "status": "success",
         "rows_received": len(data)
     }
+
