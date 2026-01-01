@@ -18,10 +18,8 @@ class Job(BaseModel):
 
 # ---------- API ----------
 @app.post("/upload")
-def upload_jobs(
-    data: List[Job],
-    credentials: HTTPAuthorizationCredentials = Depends(security)
-):
+def upload_csv(file: UploadFile = File(...)):
+
     # Token check
     if credentials.credentials != "demo123":
         raise HTTPException(status_code=401, detail="Invalid token")
@@ -30,5 +28,6 @@ def upload_jobs(
         "status": "success",
         "rows_received": len(data)
     }
+
 
 
