@@ -1,26 +1,34 @@
-from fastapi import FastAPI, UploadFile, File, Header, HTTPException
-import pandas as pd
+from fastapi import FastAPI, Header, Depends, HTTPException
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from pydantic import BaseModel
+from typing import List
 
 app = FastAPI()
 
-@app.post("/upload-csv")
-async def upload_csv(
-    file: UploadFile = File(...),
-    authorization: str = Header(None)
+# ✅ Swagger Authorization enable
+security = HTTPBearer()
+
+# ---------- MODEL ----------
+class Job(BaseModel):
+    job_title: str
+    company: str
+    location: str
+    experience: str
+    description: str
+
+# ---------- API ----------
+@app.post("/upload")
+def upload_jobs(
+    data: List[Job],
+    credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
-    # 🔐 Authorization check
-    if authorization != "Bearer demo123":
+    # Token check
+    if credentials.credentials != "demo123":
         raise HTTPException(status_code=401, detail="Invalid token")
-
-    # ✅ CSV read
-    df = pd.read_csv(file.file)
-
-    # (Optional) Save file
-    df.to_csv("received_jobs.csv", index=False)
 
     return {
         "status": "success",
-        "rows_received": len(df),
-        "columns": list(df.columns)
+        "rows_received": len(data)
     }
+
 
