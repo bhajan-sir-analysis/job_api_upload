@@ -1,30 +1,20 @@
-from fastapi import FastAPI, UploadFile, File, Header, HTTPException
-import csv
-import io
-
-app = FastAPI()
-
 @app.post("/upload-csv")
 async def upload_csv(
     file: UploadFile = File(...),
-    authorization: str = Header(...)
+    credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
-    # Token check
-    if authorization != "Bearer demo123":
+    if credentials.credentials != "demo123":
         raise HTTPException(status_code=401, detail="Invalid token")
 
-    # Read CSV
     content = await file.read()
-    decoded = content.decode("utf-8")
-    reader = csv.DictReader(io.StringIO(decoded))
-
-    rows = list(reader)
 
     return {
         "status": "success",
-        "rows_received": len(rows),
-        "sample_row": rows[0] if rows else {}
+        "filename": file.filename,
+        "size": len(content)
     }
+
+
 
 
 
