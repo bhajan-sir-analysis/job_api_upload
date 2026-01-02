@@ -1,3 +1,14 @@
+from fastapi import FastAPI, UploadFile, File, Depends, HTTPException
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+app = FastAPI()
+
+security = HTTPBearer()
+
+@app.get("/")
+def root():
+    return {"status": "API running"}
+
 @app.post("/upload-csv")
 async def upload_csv(
     file: UploadFile = File(...),
