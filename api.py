@@ -1,42 +1,25 @@
-from fastapi import FastAPI, Header, UploadFile, File, HTTPException
-from typing import List
-import pandas as pd
+from fastapi import FastAPI, UploadFile, File, Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 app = FastAPI()
 
-# -----------------------------
-# JSON upload endpoint
-# -----------------------------
-@app.post("/upload")
-def upload_jobs(
-    data: List[dict],
-    authorization: str = Header(...)
-):
-    if authorization != "Bearer demo123":
-        raise HTTPException(status_code=401, detail="Invalid token")
+security = HTTPBearer()
 
-    return {
-        "status": "success",
-        "rows_received": len(data)
-    }
-
-
-# -----------------------------
-# CSV upload endpoint
-# -----------------------------
 @app.post("/upload-csv")
-async def upload_csv(
+def upload_csv(
     file: UploadFile = File(...),
-    authorization: str = Header(...)
+    credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
-    if authorization != "Bearer demo123":
-        raise HTTPException(status_code=401, detail="Invalid token")
-
-    df = pd.read_csv(file.file)
+    # Token check
+    if credentials.credentials != "demo123":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token"
+        )
 
     return {
         "status": "success",
-        "rows_received": len(df),
-        "columns": list(df.columns)
+        "filename": file.filename
     }
+
 
