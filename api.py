@@ -1,11 +1,12 @@
 from fastapi import FastAPI, File, UploadFile, Header, HTTPException
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import pandas as pd
 import io
 import os
 from datetime import datetime
 
 app = FastAPI()
-
+security = HTTPBearer()
 API_KEY = "demo123"
 
 UPLOAD_DIR = "uploads"
@@ -18,11 +19,12 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 @app.post("/upload-csv")
 async def upload_csv(
     file: UploadFile = File(...),
-    authorization: str = Header(...)
+    credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
-    # 🔐 Auth check
-    if authorization != f"Bearer {API_KEY}":
+    if credentials.credentials != "demo123":
         raise HTTPException(status_code=401, detail="Invalid token")
+   
+    
 
     # 📥 Read CSV
     content = await file.read()
@@ -51,6 +53,7 @@ async def upload_csv(
         "rows_received": len(df),
         "file_saved": filename
     }
+
 
 
 
