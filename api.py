@@ -1,6 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import os
+import csv
 
 app = FastAPI()
 security = HTTPBearer()
@@ -30,8 +31,9 @@ async def upload_csv(
         "saved_path": file_path
     }
 
-    
-    @app.get("/api/mapped-jobs")
+
+# ✅ IMPORTANT: this must be OUTSIDE upload_csv
+@app.get("/api/mapped-jobs")
 def verify_mapped_jobs(limit: int = 5):
     file_path = "uploads/final_upload_ready.csv"
 
