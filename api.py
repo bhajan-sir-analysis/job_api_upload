@@ -1,9 +1,12 @@
 from fastapi import FastAPI, UploadFile, File, Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+import os
 
 app = FastAPI()
-
 security = HTTPBearer()
+
+UPLOAD_DIR = "uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @app.get("/")
 def root():
@@ -17,18 +20,12 @@ async def upload_csv(
     if credentials.credentials != "demo123":
         raise HTTPException(status_code=401, detail="Invalid token")
 
-    content = await file.read()
+    file_path = os.path.join(UPLOAD_DIR, file.filename)
+
+    with open(file_path, "wb") as f:
+        f.write(await file.read())
 
     return {
         "status": "success",
-        "filename": file.filename,
-        "size": len(content)
+        "saved_path": file_path
     }
-
-
-
-
-
-
-
-
