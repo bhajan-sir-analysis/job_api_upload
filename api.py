@@ -29,3 +29,23 @@ async def upload_csv(
         "status": "success",
         "saved_path": file_path
     }
+
+    
+    @app.get("/api/mapped-jobs")
+def verify_mapped_jobs(limit: int = 5):
+    file_path = "uploads/final_upload_ready.csv"
+
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="CSV file not found")
+
+    with open(file_path, newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        rows = list(reader)
+
+    return {
+        "status": "success",
+        "total_records": len(rows),
+        "sample_records": rows[:limit]
+    }
+
+
